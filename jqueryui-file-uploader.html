@@ -1,0 +1,206 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+    <!--
+    Copyright (c) 2007-2015 by Vernon E. Six, Jr.
+    Author's websites: http://www.ipinga.com and http://www.VernSix.com
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to use
+    the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice, author's websites and this permission notice
+    shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    IN THE SOFTWARE.
+    -->
+
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>jQuery UI File Uploader</title>
+
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/start/jquery-ui.css"
+          id="theme">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $(".button").button();
+        });
+
+        /*
+         A handy reference... http://www.w3.org/TR/XMLHttpRequest/
+
+         Event name	        Interface	    Dispatched when…
+         readystatechange	Event	        The readyState attribute changes value, except when it changes to UNSENT.
+         loadstart	        ProgressEvent	The request starts.
+         progress	        ProgressEvent	Transmitting data.
+         abort	            ProgressEvent	The request has been aborted. For instance, by invoking the abort() method.
+         error	            ProgressEvent	The request has failed.
+         load	            ProgressEvent	The request has successfully completed.
+         timeout	            ProgressEvent	The author specified timeout has passed before the request completed.
+         loadend	            ProgressEvent	The request has completed (either in success or failure).
+         */
+        var XHR;
+
+        function uploadFileAbort() {
+            // console.log('abortUpload() fired');
+            XHR.abort();
+            XHR = null;
+            return false;
+        }
+        function uploadFile() {
+            var file = $("#file1")[0].files[0];
+            var formdata = new FormData();
+            formdata.append("file1", file);
+            XHR = new XMLHttpRequest();
+            XHR.upload.addEventListener("progress", uploadProgressHandler, false);
+            XHR.addEventListener("loadstart", uploadLoadStartHandler, false);
+            XHR.addEventListener("loadend", uploadLoadEndHandler, false);
+            XHR.addEventListener("load", uploadLoadHandler, false);
+            XHR.addEventListener("error", uploadErrorHandler, false);
+            XHR.addEventListener("abort", uploadAbortHandler, false);
+            XHR.open("POST", "server.php"); // change this to whatever url is correct for your server
+            XHR.send(formdata);
+            return false;
+        }
+        function uploadLoadStartHandler(event) {
+            // console.log(event);
+            $("#progress-container").show();
+            $("#final-status").html('');
+        }
+        function uploadLoadEndHandler(event) {
+            // console.log(event);
+            $("#progress-container").hide();
+            $("#file1").val('');
+            $("#fakepath").html('');
+        }
+        function uploadProgressHandler(event) {
+            // console.log(event);
+            var percentComplete = (event.loaded / event.total) * 100;
+            $("#progress-status").html("Uploaded " + event.loaded + " bytes of " + event.total + " (" + Math.round(percentComplete) + "%)");
+            $("#progress-bar").width(percentComplete + '%');
+        }
+        function uploadLoadHandler(event) {
+            // console.log(event);
+            $("#final-status").html(event.target.responseText);
+            $("#file1").val('');
+            $("#fakepath").html('');
+        }
+        function uploadErrorHandler(event) {
+            // console.log(event);
+            $("#final-status").html("Upload Failed");
+            $("#file1").val('');
+            $("#fakepath").html('');
+        }
+        function uploadAbortHandler(event) {
+            // console.log(event);
+            $("#final-status").html("Upload Aborted.  It should stop sending now!");
+            $("#file1").val('');
+            $("#fakepath").html('');
+        }
+        function displayFilename() {
+            // console.log($("#file1")[0].files);
+            var filename = $("#file1")[0].files[0].name;
+            $("#fakepath").html(filename)
+        }
+    </script>
+
+    <style>
+
+        #content {
+            width: 500px;
+        }
+
+        input {
+            width: 250px;
+            padding: 3px;
+            font-size: 1em;
+        }
+
+        #file1 {
+            position: absolute;
+            opacity: 0;
+            -moz-opacity: 0;
+            filter: alpha(opacity:0);
+            z-index: 2;
+            width: 270px;
+        }
+
+        .layer0 {
+            margin: 0;
+            height: 30px;
+            position: relative;
+        }
+
+        .layer1 {
+            position: absolute;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            height: 1em;
+            width: 100%
+        }
+
+        .layer2 {
+            position: absolute;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            height: 1em;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div id="content">
+
+    <div class="ui-widget ui-widget-content ui-corner-all margin_bot10" style="min-height: 400px; padding: 10px;">
+
+        <form id="upload_form" enctype="multipart/form-data" method="post">
+
+            <!--
+                if you don't want the file transfer to start automatically, remove the "return uploadFile()" on this
+                input tag and uncomment the upload_file input tag
+             -->
+            <input type="file" name="file1" id="file1" onmouseover="$('#selectfile').trigger('mouseover')"
+                   onmouseout="$('#selectfile').trigger('mouseout')"
+                   onchange="displayFilename(); return uploadFile()">
+            <input type="button" value="Select a file..." class="button" id="selectfile">
+            <span id="fakepath"></span>
+
+            <!-- input id="upload_file" type="button" value="Upload File" onclick="return uploadFile()" class="button" style="margin-top: 10px;" -->
+
+            <div id="progress-container" style="display: none; margin-top: 10px;">
+                <div id="progress-status" style="width: 100%; text-align: center;"></div>
+                <div id="progress-row" class="layer0">
+                    <div id="progress-background" class="layer1 ui-widget-content ui-corner-all"></div>
+                    <div id="progress-bar" class="layer2 ui-state-default ui-widget-content ui-corner-all"></div>
+                </div>
+                <button class="button" onclick="return uploadFileAbort()">Abort</button>
+            </div>
+
+            <p id="final-status"></p>
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>
