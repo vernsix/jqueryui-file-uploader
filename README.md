@@ -29,6 +29,13 @@ Vern Six
 Email:   vern@ipinga.com
 Twitter: @vernsix
 
+##Author's websites: 
+
+http://ipinga.com 
+http://VernSix.com
+http://PhpExpertResume.com
+http://SeniorPhpDeveloper.com
+
 ## License
 
 Copyright (c) 2015 Vern Six
