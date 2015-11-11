@@ -10,7 +10,7 @@ theme you are using, my examples will change accordingly as well.
 
 I had to do some trickery around a couple items...
 
-1) the <input type="file"> had to be completely hidden and overlayed with a 
+1) the (input type="file") had to be completely hidden and overlayed with a 
 decent looking button.  Because this input type is a browser specific creature,
 I could not find a good way to style it.  So I simply hide it, then implement
 my own button over the top of it.  I had to write a function to display the 
